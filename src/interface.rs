@@ -2,9 +2,12 @@ use anyhow::Result as AnyResult;
 use ndarray::Array1;
 use ordered_float::NotNan;
 
+pub type Variable = Array1<f64>;
+pub type Score = NotNan<f64>;
+
 pub trait Problem {
     fn variable_dimension(&self) -> usize;
-    fn evaluate(&self, x: &Array1<f64>) -> AnyResult<NotNan<f64>>;
+    fn evaluate(&self, x: &Variable) -> AnyResult<Score>;
 }
 
 pub trait Optimizer {
@@ -16,13 +19,13 @@ pub trait Optimizer {
         &self,
         problem: &dyn Problem,
         state: Self::State,
-    ) -> AnyResult<(NotNan<f64>, Array1<f64>, Self::State)>;
+    ) -> AnyResult<(Score, Variable, Self::State)>;
 
     fn optimize(
         &self,
         problem: &dyn Problem,
         state: Option<Self::State>,
-    ) -> AnyResult<(NotNan<f64>, Array1<f64>, Self::State)> {
+    ) -> AnyResult<(Score, Variable, Self::State)> {
         let state = if let Some(state) = state {
             state
         } else {
