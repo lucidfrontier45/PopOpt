@@ -15,6 +15,12 @@ pub trait Optimizer {
 
     fn initialize(&self, problem: &dyn Problem) -> AnyResult<Self::State>;
 
+    fn extract_best(
+        &self,
+        problem: &dyn Problem,
+        state: &Self::State,
+    ) -> AnyResult<(Score, Variable)>;
+
     fn step(
         &self,
         problem: &dyn Problem,
@@ -23,15 +29,24 @@ pub trait Optimizer {
 
     fn optimize(
         &self,
+        n_iter: usize,
         problem: &dyn Problem,
         state: Option<Self::State>,
     ) -> AnyResult<(Score, Variable, Self::State)> {
-        let state = if let Some(state) = state {
+        let mut state = if let Some(state) = state {
             state
         } else {
             self.initialize(problem)?
         };
-        let (value, solution, state) = self.step(problem, state)?;
-        Ok((value, solution, state))
+        let (mut best_score, mut best_variable) = self.extract_best(problem, &state)?;
+        for _ in 0..n_iter {
+            let (score, variable, new_state) = self.step(problem, state)?;
+            state = new_state;
+            if score < best_score {
+                best_score = score;
+                best_variable = variable;
+            }
+        }
+        Ok((best_score, best_variable, state))
     }
 }
