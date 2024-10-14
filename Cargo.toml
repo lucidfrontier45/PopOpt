@@ -5,5 +5,6 @@ edition = "2021"
 authors = ["杜 世橋 Du Shiqiao <lucidfrontier.45@gmail.com>"]
 
 [dependencies]
+anyhow = "1.0.89"
 ndarray = "0.16.1"
 ordered-float = "4.3.0"
